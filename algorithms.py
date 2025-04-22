@@ -1,41 +1,26 @@
-# algorithms.py
 import csv
-import os
 from ga import GeneticAlgorithm
 from scheduler import Scheduler
 from heuristics import (
     kk_heuristic, spt_heuristic, lpt_heuristic,
-    srpt_heuristic, lrpt_heuristic, mixed_heuristic
+    srpt_heuristic, lrpt_heuristic, mixed_heuristic, random_heuristic
 )
 
+def run_all_variants(instance_name, instance_data, results_file="results.csv", scenario_id=0):
+    results = []
 
-def run_all_variants(instance_name, instance_data):
-    print(f"Running GAKK on {instance_name}")
-    run_ga_with_heuristic(instance_data, heuristic="KK")
+    results += run_ga_with_heuristic(instance_data, "KK", instance_name, results_file, scenario_id)
+    results += run_ga_with_heuristic(instance_data, "SPT", instance_name, results_file, scenario_id)
+    results += run_ga_with_heuristic(instance_data, "LPT", instance_name, results_file, scenario_id)
+    results += run_ga_with_heuristic(instance_data, "SRPT", instance_name, results_file, scenario_id)
+    results += run_ga_with_heuristic(instance_data, "LRPT", instance_name, results_file, scenario_id)
+    results += run_ga_with_heuristic(instance_data, "MIXED", instance_name, results_file, scenario_id)
+    results += run_ga_with_heuristic(instance_data, "RAND", instance_name, results_file, scenario_id)
+    results += run_tabu_search(instance_data, instance_name, results_file, scenario_id)
 
-    print(f"Running GASPT on {instance_name}")
-    run_ga_with_heuristic(instance_data, heuristic="SPT")
+    return results
 
-    print(f"Running GALPT on {instance_name}")
-    run_ga_with_heuristic(instance_data, heuristic="LPT")
-
-    print(f"Running GASRPT on {instance_name}")
-    run_ga_with_heuristic(instance_data, heuristic="SRPT")
-
-    print(f"Running GALRPT on {instance_name}")
-    run_ga_with_heuristic(instance_data, heuristic="LRPT")
-
-    print(f"Running GAM (mixed) on {instance_name}")
-    run_ga_with_heuristic(instance_data, heuristic="MIXED")
-
-    print(f"Running GA (standard) on {instance_name}")
-    run_ga_with_heuristic(instance_data, heuristic=None)
-
-    print(f"Running TS (Tabu Search) on {instance_name}")
-    run_tabu_search(instance_data)
-
-
-def run_ga_with_heuristic(instance_data, heuristic):
+def run_ga_with_heuristic(instance_data, heuristic, instance_name, results_file, scenario_id):
     ga = GeneticAlgorithm(
         pop_size=30,
         num_generations=50,
@@ -48,32 +33,29 @@ def run_ga_with_heuristic(instance_data, heuristic):
     heuristic_func = get_heuristic_function(heuristic)
 
     best_sol, best_score = ga.run(instance_data, scheduler, heuristic_func)
-    print(f"[{heuristic or 'Standard GA'}] Best Makespan: {best_score}")
 
-    # Save to results.csv
-    file_exists = os.path.isfile("results.csv")
-    with open("results.csv", "a", newline="") as f:
+    # Log result to CSV
+    with open(results_file, "a", newline="") as f:
         writer = csv.writer(f)
-        if not file_exists:
-            writer.writerow(["Instance", "Algorithm", "Makespan"])
-        writer.writerow([instance_data.get('name', 'Unknown'), heuristic or 'Standard GA', best_score])
+        writer.writerow([instance_name, heuristic, best_score, scenario_id])
 
+    return [[instance_name, heuristic, best_score, scenario_id]]
 
-def run_tabu_search(instance_data):
-    print("[TS] Tabu Search placeholder... (not implemented)")
-
+def run_tabu_search(instance_data, instance_name, results_file, scenario_id):
+    # Placeholder TS logic
+    best_score = 9999  # mock result
+    with open(results_file, "a", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow([instance_name, "TS", best_score, scenario_id])
+    return [[instance_name, "TS", best_score, scenario_id]]
 
 def get_heuristic_function(name):
-    if name == "KK":
-        return kk_heuristic
-    elif name == "SPT":
-        return spt_heuristic
-    elif name == "LPT":
-        return lpt_heuristic
-    elif name == "SRPT":
-        return srpt_heuristic
-    elif name == "LRPT":
-        return lrpt_heuristic
-    elif name == "MIXED":
-        return mixed_heuristic
-    return None
+    return {
+        "KK": kk_heuristic,
+        "SPT": spt_heuristic,
+        "LPT": lpt_heuristic,
+        "SRPT": srpt_heuristic,
+        "LRPT": lrpt_heuristic,
+        "MIXED": mixed_heuristic,
+        "RAND": random_heuristic
+    }.get(name, None)
