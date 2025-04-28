@@ -41,4 +41,4 @@ if __name__ == "__main__":
             writer.writerow(["Instance", "Variant", "Best Makespan", "Scenario"])
             writer.writerows(results)
 
-        print(f"✅ Saved results to {output_file}")
+        print(f" Saved results to {output_file}")
