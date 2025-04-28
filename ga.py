@@ -2,18 +2,19 @@ import random
 from copy import deepcopy
 
 class GeneticAlgorithm:
-    def __init__(self, pop_size, num_generations, crossover_rate, mutation_rate, elitism_rate):
-        self.pop_size = pop_size
-        self.num_generations = num_generations
-        self.crossover_rate = crossover_rate
-        self.mutation_rate = mutation_rate
-        self.elitism_rate = elitism_rate
+    def __init__(self, instance_data):
+        self.pop_size = 200  # Big, stable population
+        self.num_generations = 500  # Many generations
+        self.crossover_rate = 0.95
+        self.mutation_rate = 0.05
+        self.elitism_rate = 0.25
 
     def initialize_population(self, instance_data, heuristic_func=None):
         population = []
         for _ in range(self.pop_size):
             if heuristic_func and random.random() < 0.25:
                 individual = heuristic_func(instance_data)
+                individual = self.mutate(individual, num_swaps=2)
             else:
                 individual = self.random_solution(instance_data)
             population.append(individual)
@@ -49,12 +50,10 @@ class GeneticAlgorithm:
     def crossover(self, parent1, parent2):
         size = len(parent1)
         pos = sorted(random.sample(range(size), size // 2))
-        child1 = [None] * size
-        child2 = [None] * size
+        child1, child2 = [None]*size, [None]*size
 
         for i in pos:
-            child1[i] = parent1[i]
-            child2[i] = parent2[i]
+            child1[i], child2[i] = parent1[i], parent2[i]
 
         job_counts = {job_id: parent1.count(job_id) for job_id in set(parent1)}
 
@@ -77,10 +76,26 @@ class GeneticAlgorithm:
                         count[job_id] += 1
                         break
 
-    def mutate(self, individual):
-        i, j = random.sample(range(len(individual)), 2)
-        individual[i], individual[j] = individual[j], individual[i]
+    def mutate(self, individual, num_swaps=2):
+        for _ in range(num_swaps):
+            i, j = random.sample(range(len(individual)), 2)
+            individual[i], individual[j] = individual[j], individual[i]
         return individual
+
+    def local_search(self, individual, scheduler, instance_data, swaps=5):
+        best_individual = deepcopy(individual)
+        best_score = self.evaluate_fitness(best_individual, scheduler, instance_data)
+
+        for _ in range(swaps):
+            candidate = deepcopy(best_individual)
+            i, j = random.sample(range(len(candidate)), 2)
+            candidate[i], candidate[j] = candidate[j], candidate[i]
+
+            candidate_score = self.evaluate_fitness(candidate, scheduler, instance_data)
+            if candidate_score < best_score:
+                best_individual, best_score = candidate, candidate_score
+
+        return best_individual
 
     def run(self, instance_data, scheduler, heuristic_func=None):
         population = self.initialize_population(instance_data, heuristic_func)
@@ -94,14 +109,21 @@ class GeneticAlgorithm:
             while len(new_population) < self.pop_size:
                 parent1 = self.selection(population, fitnesses)
                 parent2 = self.selection(population, fitnesses)
+
                 if random.random() < self.crossover_rate:
                     child1, child2 = self.crossover(parent1, parent2)
                 else:
                     child1, child2 = deepcopy(parent1), deepcopy(parent2)
+
                 if random.random() < self.mutation_rate:
                     child1 = self.mutate(child1)
                 if random.random() < self.mutation_rate:
                     child2 = self.mutate(child2)
+
+                # Apply stronger local search
+                child1 = self.local_search(child1, scheduler, instance_data)
+                child2 = self.local_search(child2, scheduler, instance_data)
+
                 new_population.extend([child1, child2])
 
             population = new_population[:self.pop_size]
