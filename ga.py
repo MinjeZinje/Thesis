@@ -1,13 +1,16 @@
 import random
+import csv
 from copy import deepcopy
+from scheduler import Scheduler
+
 
 class GeneticAlgorithm:
-    def __init__(self, instance_data):
-        self.pop_size = 200  # Big, stable population
-        self.num_generations = 500  # Many generations
-        self.crossover_rate = 0.95
-        self.mutation_rate = 0.05
-        self.elitism_rate = 0.25
+    def __init__(self, instance_data, pop_size=100, num_generations=200, crossover_rate=0.95, mutation_rate=0.05, elitism_rate=0.25):
+        self.pop_size = pop_size
+        self.num_generations = num_generations
+        self.crossover_rate = crossover_rate
+        self.mutation_rate = mutation_rate
+        self.elitism_rate = elitism_rate
 
     def initialize_population(self, instance_data, heuristic_func=None):
         population = []
@@ -120,7 +123,6 @@ class GeneticAlgorithm:
                 if random.random() < self.mutation_rate:
                     child2 = self.mutate(child2)
 
-                # Apply stronger local search
                 child1 = self.local_search(child1, scheduler, instance_data)
                 child2 = self.local_search(child2, scheduler, instance_data)
 
@@ -131,3 +133,72 @@ class GeneticAlgorithm:
         fitnesses = [self.evaluate_fitness(ind, scheduler, instance_data) for ind in population]
         best_index = fitnesses.index(min(fitnesses))
         return population[best_index], fitnesses[best_index]
+
+
+def run_tabu_search(instance_data, instance_name, results_file, scenario_id):
+    scheduler = Scheduler(num_machines=instance_data['num_machines'])
+
+    def random_solution(instance_data):
+        job_counts = [len(ops) for ops in instance_data['jobs']]
+        job_sequence = []
+        for job_id, count in enumerate(job_counts):
+            job_sequence += [job_id] * count
+        random.shuffle(job_sequence)
+        return job_sequence
+
+    def decode(individual, instance_data):
+        job_op_indices = [0] * instance_data['num_jobs']
+        operation_sequence = []
+        for job_id in individual:
+            op_idx = job_op_indices[job_id]
+            machine, time = instance_data['jobs'][job_id][op_idx]
+            operation_sequence.append(((job_id, op_idx), (machine, time)))
+            job_op_indices[job_id] += 1
+        return operation_sequence
+
+    def evaluate(individual):
+        decoded = decode(individual, instance_data)
+        return scheduler.calculate_makespan(decoded)
+
+    def get_neighbors(solution):
+        neighbors = []
+        for _ in range(10):  # limit neighbor count
+            neighbor = solution.copy()
+            i, j = random.sample(range(len(solution)), 2)
+            neighbor[i], neighbor[j] = neighbor[j], neighbor[i]
+            neighbors.append((neighbor, (i, j)))
+        return neighbors
+
+    # Tabu parameters
+    max_iters = 100
+    tabu_size = 10
+
+    current = random_solution(instance_data)
+    current_score = evaluate(current)
+    best = deepcopy(current)
+    best_score = current_score
+    tabu_list = []
+
+    for _ in range(max_iters):
+        neighbors = get_neighbors(current)
+        neighbors = sorted(neighbors, key=lambda x: evaluate(x[0]))
+
+        for neighbor, move in neighbors:
+            if move not in tabu_list:
+                current = neighbor
+                current_score = evaluate(current)
+                tabu_list.append(move)
+                if len(tabu_list) > tabu_size:
+                    tabu_list.pop(0)
+                break
+
+        if current_score < best_score:
+            best = deepcopy(current)
+            best_score = current_score
+
+    # Save result
+    with open(results_file, "a", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow([instance_name, "TS", best_score, scenario_id])
+
+    return [[instance_name, "TS", best_score, scenario_id]]
