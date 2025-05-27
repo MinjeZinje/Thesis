@@ -1,26 +1,44 @@
-# scheduler.py
+from __future__ import annotations
+from typing import List, Tuple, Dict
+
+
+Operation = Tuple[Tuple[int, int], Tuple[int, int]]
+# ((job_id, op_index), (machine_id, duration))
+
 
 class Scheduler:
-    def __init__(self, num_machines):
-        self.num_machines = num_machines
+    """Event-based simulator for regular Job-Shop & Dynamic rescheduling."""
+    __slots__ = ("num_machines", "_cache")
 
-    def calculate_makespan(self, chromosome):
-        # chromosome: [((job_id, op_index), (machine, time)), ...]
+    def __init__(self, num_machines: int, use_cache: bool = False) -> None:
+        self.num_machines: int = num_machines
+        self._cache: Dict[Tuple[int, ...], int] | None = {} if use_cache else None
 
-        machine_available_time = [0] * self.num_machines
-        job_end_time = {}  # Last finish time for each job
 
-        for (job_id, op_idx), (machine, duration) in chromosome:
-            # Start time = max of machine ready and job ready
-            start_time = max(
-                machine_available_time[machine],
-                job_end_time.get(job_id, 0)
-            )
-            finish_time = start_time + duration
+    def calculate_makespan(self, chromosome: List[Operation]) -> int:
+        """
+        Parameters
+        ----------
+        chromosome : list[Operation]
+            List produced by GA.decode(...):
+            [((job_id, op_idx), (machine, proc_time)), ...]
+        """
+        if self._cache is not None:                       # optional memoisation
+            key = tuple(op[0] for op in chromosome)       # hashable job/order sig
+            if key in self._cache:
+                return self._cache[key]
 
-            # Update availability
-            machine_available_time[machine] = finish_time
-            job_end_time[job_id] = finish_time
+        m_ready = [0] * self.num_machines                 # machine availability
+        j_ready: Dict[int, int] = {}                      # last finish per job
 
-        # Makespan is the latest time any machine finishes
-        return max(machine_available_time)
+        for ((jid, _), (mach, dur)) in chromosome:
+            start = max(m_ready[mach], j_ready.get(jid, 0))
+            finish = start + dur
+            m_ready[mach] = finish
+            j_ready[jid] = finish                         # <-- correct index!
+
+        cmax = max(m_ready)
+
+        if self._cache is not None:
+            self._cache[key] = cmax
+        return cmax
