@@ -1,4 +1,3 @@
-# tabu.py
 import random, csv
 from copy import deepcopy
 from scheduler import Scheduler
