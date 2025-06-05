@@ -1,44 +1,55 @@
 from __future__ import annotations
-from typing import List, Tuple, Dict
+from typing import Dict, List, Tuple, Optional
 
-
+# ((job-id, op-idx), (machine, duration))
 Operation = Tuple[Tuple[int, int], Tuple[int, int]]
-# ((job_id, op_index), (machine_id, duration))
-
 
 class Scheduler:
-    """Event-based simulator for regular Job-Shop & Dynamic rescheduling."""
+    """Event-based JSSP simulator with optional machine‐state modifiers."""
     __slots__ = ("num_machines", "_cache")
 
     def __init__(self, num_machines: int, use_cache: bool = False) -> None:
-        self.num_machines: int = num_machines
-        self._cache: Dict[Tuple[int, ...], int] | None = {} if use_cache else None
+        self.num_machines = num_machines
+        self._cache: Optional[Dict[Tuple[int, ...], int]] = {} if use_cache else None
 
-
-    def calculate_makespan(self, chromosome: List[Operation]) -> int:
+    def calculate_makespan(
+        self,
+        chromosome: List[Operation],
+        machine_status: Optional[Dict[int, str | float]] = None,
+        noise_factor: float = 1.2,          # default multiplier for “noisy” machines
+        breakdown_penalty: int = 10**6      # large delay for “broken” machines
+    ) -> int:
         """
-        Parameters
-        ----------
-        chromosome : list[Operation]
-            List produced by GA.decode(...):
-            [((job_id, op_idx), (machine, proc_time)), ...]
+        machine_status[m] can be:
+          • "broken"  → task on machine m incurs breakdown_penalty extra time
+          • "noisy"   → task duration is multiplied by noise_factor
+          • a float   → task duration is multiplied by that float (custom noise)
         """
-        if self._cache is not None:                       # optional memoisation
-            key = tuple(op[0] for op in chromosome)       # hashable job/order sig
-            if key in self._cache:
-                return self._cache[key]
+        if self._cache is not None:
+            key = tuple(op[0] for op in chromosome)
+            hit = self._cache.get(key)
+            if hit is not None:
+                return hit
 
-        m_ready = [0] * self.num_machines                 # machine availability
-        j_ready: Dict[int, int] = {}                      # last finish per job
+        m_ready = [0] * self.num_machines
+        j_ready: Dict[int, int] = {}
 
-        for ((jid, _), (mach, dur)) in chromosome:
-            start = max(m_ready[mach], j_ready.get(jid, 0))
+        for (job_id, _), (mach, dur) in chromosome:
+            status = (machine_status or {}).get(mach)
+
+            if status == "broken":
+                dur += breakdown_penalty
+            elif status == "noisy":
+                dur = int(dur * noise_factor)
+            elif isinstance(status, (int, float)):      # custom factor
+                dur = int(dur * status)
+
+            start  = max(m_ready[mach], j_ready.get(job_id, 0))
             finish = start + dur
             m_ready[mach] = finish
-            j_ready[jid] = finish                         # <-- correct index!
+            j_ready[job_id] = finish
 
         cmax = max(m_ready)
-
         if self._cache is not None:
             self._cache[key] = cmax
         return cmax
