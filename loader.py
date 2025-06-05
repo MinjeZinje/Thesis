@@ -1,5 +1,3 @@
-# loader.py
-
 def load_instances(path):
     instances = []
     with open(path, 'r') as file:
