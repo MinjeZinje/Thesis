@@ -1,155 +1,102 @@
-import numpy as np
+import random, numpy as np
 from copy import deepcopy
-from functools import lru_cache
+from typing import List, Tuple
 
+Op = Tuple[Tuple[int, int], Tuple[int, int]]          # ((job,op),(mach,dur))
 
 class GeneticAlgorithm:
-    def __init__(
-        self,
-        instance_data,
-        pop_size=60,
-        num_generations=120,
-        crossover_rate=0.95,
-        mutation_rate=0.05,
-        elitism_rate=0.10,
-        local_search_swaps=15,
-        seed_ratio=0.25,
-        rng_seed=None,
-    ):
-        self.pop_size = pop_size
-        self.num_generations = num_generations
-        self.crossover_rate = crossover_rate
-        self.mutation_rate = mutation_rate
-        self.elitism_rate = elitism_rate
-        self.local_search_swaps = local_search_swaps
-        self.seed_ratio = seed_ratio  # fraction of pop initialised by heuristic
-        self.rng = np.random.default_rng(rng_seed)
-        self._fitness_cache: dict[tuple, int] = {}
+    def __init__(self, instance_data: dict,
+                 pop_size=200, num_generations=1000,
+                 crossover_rate=0.95, mutation_rate=0.05,
+                 elitism_rate=0.10, local_search_swaps=30,
+                 seed_ratio=0.25, rng_seed=None):
+        self.data   = instance_data
+        self.NP, self.G = pop_size, num_generations
+        self.cx, self.mut = crossover_rate, mutation_rate
+        self.elite, self.ls, self.seed = elitism_rate, local_search_swaps, seed_ratio
+        self.rng = random.Random(rng_seed)
 
-    #  Population helpers
-    def _random_solution(self, instance_data):
-        counts = [len(ops) for ops in instance_data["jobs"]]
+    # ---------- population ---------------------------------------------------
+    def _rand_ind(self) -> List[int]:
+        counts = [len(ops) for ops in self.data["jobs"]]
         seq = np.repeat(np.arange(len(counts)), counts)
-        self.rng.shuffle(seq)
-        return seq.tolist()
+        self.rng.shuffle(seq);  return seq.tolist()
 
-    def _initialize_population(self, instance_data, heuristic_func):
-        pop = []
-        for _ in range(self.pop_size):
-            if heuristic_func and self.rng.random() < self.seed_ratio:
-                ind = heuristic_func(instance_data)
-                ind = self._mutate(ind, 2)
-            else:
-                ind = self._random_solution(instance_data)
-            pop.append(ind)
-        return pop
+    def _init_pop(self, heuristic):
+        return [heuristic(self.data) if heuristic and self.rng.random() < self.seed
+                else self._rand_ind() for _ in range(self.NP)]
 
-    #  Decoding & fitness
-    def _decode(self, individual, instance_data):
-        op_idx = [0] * instance_data["num_jobs"]
-        seq = []
-        for jid in individual:
-            mid, dur = instance_data["jobs"][jid][op_idx[jid]]
-            seq.append(((jid, op_idx[jid]), (mid, dur)))
-            op_idx[jid] += 1
-        return seq
+    # ---------- decoding / fitness ------------------------------------------
+    @staticmethod
+    def _decode(ind: List[int], data: dict) -> List[Op]:
+        p = [0] * data["num_jobs"]; out = []
+        for j in ind:
+            m, d = data["jobs"][j][p[j]]; out.append(((j, p[j]), (m, d))); p[j] += 1
+        return out
 
-    def _evaluate(self, individual, scheduler, instance_data):
-        key = tuple(individual)
-        hit = self._fitness_cache.get(key)
-        if hit is not None:
-            return hit
-        f = scheduler.calculate_makespan(self._decode(individual, instance_data))
-        self._fitness_cache[key] = f
-        return f
+    def _fit(self, ind, sched):  return sched.calculate_makespan(self._decode(ind, self.data))
 
-    #  GA operators
-    def _selection(self, population, fitnesses):
-        # tournament k=3
-        idx = self.rng.integers(0, self.pop_size, 3)
-        best = min(idx, key=lambda i: fitnesses[i])
-        return population[best]
+    # ---------- GA operators -------------------------------------------------
+    def _select(self, pop, fit):
+        i, j = self.rng.randrange(self.NP), self.rng.randrange(self.NP)
+        return pop[i] if fit[i] < fit[j] else pop[j]
 
-    def _crossover(self, p1, p2):
+    def _cx(self, p1, p2):
+        """Order-based crossover that preserves duplicate job IDs."""
         size = len(p1)
-        pos = self.rng.choice(size, size // 2, replace=False)
+        pos  = self.rng.sample(range(size), k=size // 2)
         c1, c2 = [None] * size, [None] * size
-        for i in pos:
-            c1[i], c2[i] = p1[i], p2[i]
 
-        job_counts = {j: p1.count(j) for j in set(p1)}
-        self._fill_fixed(c1, p2, job_counts)
-        self._fill_fixed(c2, p1, job_counts)
+        # copy selected positions
+        for i in pos:
+            c1[i] = p1[i]
+            c2[i] = p2[i]
+
+        # required number of occurrences for each job
+        job_cnt = {j: p1.count(j) for j in set(p1)}
+
+        def _fill(child, parent):
+            cnt = {j: 0 for j in job_cnt}
+            for g in child:
+                if g is not None:
+                    cnt[g] += 1
+            for i in range(size):
+                if child[i] is None:
+                    for g in parent:
+                        if cnt[g] < job_cnt[g]:
+                            child[i] = g
+                            cnt[g] += 1
+                            break
+
+        _fill(c1, p2)
+        _fill(c2, p1)
         return c1, c2
 
-    def _fill_fixed(self, child, parent, job_counts):
-        cnt = {j: 0 for j in job_counts}
-        for g in child:
-            if g is not None:
-                cnt[g] += 1
-        for i in range(len(child)):
-            if child[i] is None:
-                for j in parent:
-                    if cnt[j] < job_counts[j]:
-                        child[i] = j
-                        cnt[j] += 1
-                        break
 
-    def _mutate(self, individual, swaps=1):
-        size = len(individual)
-        for _ in range(swaps):
-            i, j = self.rng.integers(0, size, 2)
-            individual[i], individual[j] = individual[j], individual[i]
-        return individual
+    def _mut(self, ind):
+        i, j = self.rng.sample(range(len(ind)), 2); ind[i], ind[j] = ind[j], ind[i]; return ind
 
-    #  Optional local search (only on elites now)
-    def _local_search(self, individual, scheduler, instance_data):
-        best = individual
-        best_f = self._evaluate(best, scheduler, instance_data)
-
-        for _ in range(self.local_search_swaps):
-            cand = best.copy()
-            i, j = self.rng.integers(0, len(cand), 2)
-            cand[i], cand[j] = cand[j], cand[i]
-            f = self._evaluate(cand, scheduler, instance_data)
-            if f < best_f:
-                best, best_f = cand, f
+    def _ls(self, ind, sched):
+        best, fbest = ind, self._fit(ind, sched)
+        for _ in range(self.ls):
+            cand = self._mut(ind.copy()); f = self._fit(cand, sched)
+            if f < fbest: best, fbest = cand, f
         return best
 
-    #  Main entry
+    # ---------- main loop ----------------------------------------------------
     def run(self, instance_data, scheduler, heuristic_func=None):
-        pop = self._initialize_population(instance_data, heuristic_func)
-
-        for _ in range(self.num_generations):
-            fit = [self._evaluate(ind, scheduler, instance_data) for ind in pop]
-
-            # elites
-            elite_n = int(self.elitism_rate * self.pop_size)
-            elite_idx = np.argsort(fit)[:elite_n]
-            new_pop = [self._local_search(deepcopy(pop[i]), scheduler, instance_data)
-                       for i in elite_idx]
-
-            # rest of population
-            while len(new_pop) < self.pop_size:
-                p1 = self._selection(pop, fit)
-                p2 = self._selection(pop, fit)
-
-                if self.rng.random() < self.crossover_rate:
-                    c1, c2 = self._crossover(p1, p2)
-                else:
-                    c1, c2 = p1.copy(), p2.copy()
-
-                if self.rng.random() < self.mutation_rate:
-                    c1 = self._mutate(c1)
-                if self.rng.random() < self.mutation_rate:
-                    c2 = self._mutate(c2)
-
+        pop = self._init_pop(heuristic_func)
+        for _ in range(self.G):
+            fit = [self._fit(ind, scheduler) for ind in pop]
+            elite_k = max(1, int(self.elite * self.NP))
+            elite_idx = np.argsort(fit)[:elite_k]
+            new_pop = [self._ls(deepcopy(pop[i]), scheduler) for i in elite_idx]
+            while len(new_pop) < self.NP:
+                p1, p2 = self._select(pop, fit), self._select(pop, fit)
+                c1, c2 = (self._cx(p1, p2) if self.rng.random() < self.cx else (p1.copy(), p2.copy()))
+                if self.rng.random() < self.mut: self._mut(c1)
+                if self.rng.random() < self.mut: self._mut(c2)
                 new_pop.extend([c1, c2])
-
-            pop = new_pop[: self.pop_size]
-
-        # best individual
-        final_f = [self._evaluate(ind, scheduler, instance_data) for ind in pop]
-        best_idx = int(np.argmin(final_f))
-        return pop[best_idx], final_f[best_idx]
-
+            pop = new_pop[:self.NP]
+        best = min(pop, key=lambda ind: self._fit(ind, scheduler))
+        return best, self._fit(best, scheduler)
