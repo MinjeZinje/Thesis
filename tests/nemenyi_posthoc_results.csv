@@ -1,0 +1,281 @@
+Scenario,Instance,Algorithm A,Algorithm B,Nemenyi p-value,Significance
+Static,ft06,GA,GAKK,1.0,Not significant
+Static,ft06,GA,GALPT,1.0,Not significant
+Static,ft06,GA,GALRPT,0.9999,Not significant
+Static,ft06,GA,GAMIX,0.9994,Not significant
+Static,ft06,GA,GASPT,1.0,Not significant
+Static,ft06,GA,GASRPT,0.9999,Not significant
+Static,ft06,GA,TS,0.2469,Not significant
+Static,ft06,GAKK,GALPT,1.0,Not significant
+Static,ft06,GAKK,GALRPT,0.9994,Not significant
+Static,ft06,GAKK,GAMIX,0.9999,Not significant
+Static,ft06,GAKK,GASPT,1.0,Not significant
+Static,ft06,GAKK,GASRPT,1.0,Not significant
+Static,ft06,GAKK,TS,0.3164,Not significant
+Static,ft06,GALPT,GALRPT,0.9982,Not significant
+Static,ft06,GALPT,GAMIX,1.0,Not significant
+Static,ft06,GALPT,GASPT,0.9999,Not significant
+Static,ft06,GALPT,GASRPT,1.0,Not significant
+Static,ft06,GALPT,TS,0.3748,Not significant
+Static,ft06,GALRPT,GAMIX,0.9788,Not significant
+Static,ft06,GALRPT,GASPT,1.0,Not significant
+Static,ft06,GALRPT,GASRPT,0.9909,Not significant
+Static,ft06,GALRPT,TS,0.0929,Not significant
+Static,ft06,GAMIX,GASPT,0.9957,Not significant
+Static,ft06,GAMIX,GASRPT,1.0,Not significant
+Static,ft06,GAMIX,TS,0.5927,Not significant
+Static,ft06,GASPT,GASRPT,0.9987,Not significant
+Static,ft06,GASPT,TS,0.1624,Not significant
+Static,ft06,GASRPT,TS,0.5032,Not significant
+Static,ft10,GA,GAKK,0.9999,Not significant
+Static,ft10,GA,GALPT,0.8483,Not significant
+Static,ft10,GA,GALRPT,1.0,Not significant
+Static,ft10,GA,GAMIX,0.9997,Not significant
+Static,ft10,GA,GASPT,0.7422,Not significant
+Static,ft10,GA,GASRPT,0.9909,Not significant
+Static,ft10,GA,TS,0.0144,Significant
+Static,ft10,GAKK,GALPT,0.9695,Not significant
+Static,ft10,GAKK,GALRPT,0.9999,Not significant
+Static,ft10,GAKK,GAMIX,1.0,Not significant
+Static,ft10,GAKK,GASPT,0.9243,Not significant
+Static,ft10,GAKK,GASRPT,0.9998,Not significant
+Static,ft10,GAKK,TS,0.0035,Significant
+Static,ft10,GALPT,GALRPT,0.8325,Not significant
+Static,ft10,GALPT,GAMIX,0.9826,Not significant
+Static,ft10,GALPT,GASPT,1.0,Not significant
+Static,ft10,GALPT,GASRPT,0.9991,Not significant
+Static,ft10,GALPT,TS,0.0,Significant
+Static,ft10,GALRPT,GAMIX,0.9996,Not significant
+Static,ft10,GALRPT,GASPT,0.7221,Not significant
+Static,ft10,GALRPT,GASRPT,0.9886,Not significant
+Static,ft10,GALRPT,TS,0.0161,Significant
+Static,ft10,GAMIX,GASPT,0.9505,Not significant
+Static,ft10,GAMIX,GASRPT,1.0,Not significant
+Static,ft10,GAMIX,TS,0.0024,Significant
+Static,ft10,GASPT,GASRPT,0.9944,Not significant
+Static,ft10,GASPT,TS,0.0,Significant
+Static,ft10,GASRPT,TS,0.0005,Significant
+Static,ft20,GA,GAKK,1.0,Not significant
+Static,ft20,GA,GALPT,1.0,Not significant
+Static,ft20,GA,GALRPT,1.0,Not significant
+Static,ft20,GA,GAMIX,0.9996,Not significant
+Static,ft20,GA,GASPT,0.9996,Not significant
+Static,ft20,GA,GASRPT,0.9944,Not significant
+Static,ft20,GA,TS,0.0001,Significant
+Static,ft20,GAKK,GALPT,1.0,Not significant
+Static,ft20,GAKK,GALRPT,0.9999,Not significant
+Static,ft20,GAKK,GAMIX,0.9976,Not significant
+Static,ft20,GAKK,GASPT,0.9976,Not significant
+Static,ft20,GAKK,GASRPT,0.9826,Not significant
+Static,ft20,GAKK,TS,0.0002,Significant
+Static,ft20,GALPT,GALRPT,0.9987,Not significant
+Static,ft20,GALPT,GAMIX,0.9886,Not significant
+Static,ft20,GALPT,GASPT,0.9886,Not significant
+Static,ft20,GALPT,GASRPT,0.9505,Not significant
+Static,ft20,GALPT,TS,0.0005,Significant
+Static,ft20,GALRPT,GAMIX,1.0,Not significant
+Static,ft20,GALRPT,GASPT,1.0,Not significant
+Static,ft20,GALRPT,GASRPT,0.9996,Not significant
+Static,ft20,GALRPT,TS,0.0,Significant
+Static,ft20,GAMIX,GASPT,1.0,Not significant
+Static,ft20,GAMIX,GASRPT,1.0,Not significant
+Static,ft20,GAMIX,TS,0.0,Significant
+Static,ft20,GASPT,GASRPT,1.0,Not significant
+Static,ft20,GASPT,TS,0.0,Significant
+Static,ft20,GASRPT,TS,0.0,Significant
+Static,la01,GA,GAKK,1.0,Not significant
+Static,la01,GA,GALPT,1.0,Not significant
+Static,la01,GA,GALRPT,1.0,Not significant
+Static,la01,GA,GAMIX,1.0,Not significant
+Static,la01,GA,GASPT,1.0,Not significant
+Static,la01,GA,GASRPT,1.0,Not significant
+Static,la01,GA,TS,0.5927,Not significant
+Static,la01,GAKK,GALPT,1.0,Not significant
+Static,la01,GAKK,GALRPT,1.0,Not significant
+Static,la01,GAKK,GAMIX,1.0,Not significant
+Static,la01,GAKK,GASPT,1.0,Not significant
+Static,la01,GAKK,GASRPT,0.9996,Not significant
+Static,la01,GAKK,TS,0.4162,Not significant
+Static,la01,GALPT,GALRPT,1.0,Not significant
+Static,la01,GALPT,GAMIX,1.0,Not significant
+Static,la01,GALPT,GASPT,1.0,Not significant
+Static,la01,GALPT,GASRPT,0.9996,Not significant
+Static,la01,GALPT,TS,0.4162,Not significant
+Static,la01,GALRPT,GAMIX,1.0,Not significant
+Static,la01,GALRPT,GASPT,1.0,Not significant
+Static,la01,GALRPT,GASRPT,0.9996,Not significant
+Static,la01,GALRPT,TS,0.4162,Not significant
+Static,la01,GAMIX,GASPT,1.0,Not significant
+Static,la01,GAMIX,GASRPT,0.9996,Not significant
+Static,la01,GAMIX,TS,0.4162,Not significant
+Static,la01,GASPT,GASRPT,1.0,Not significant
+Static,la01,GASPT,TS,0.5704,Not significant
+Static,la01,GASRPT,TS,0.7617,Not significant
+Static,la20,GA,GAKK,0.9695,Not significant
+Static,la20,GA,GALPT,0.9996,Not significant
+Static,la20,GA,GALRPT,0.9745,Not significant
+Static,la20,GA,GAMIX,0.9967,Not significant
+Static,la20,GA,GASPT,0.9858,Not significant
+Static,la20,GA,GASRPT,0.8903,Not significant
+Static,la20,GA,TS,0.0,Significant
+Static,la20,GAKK,GALPT,0.9996,Not significant
+Static,la20,GAKK,GALRPT,1.0,Not significant
+Static,la20,GAKK,GAMIX,1.0,Not significant
+Static,la20,GAKK,GASPT,1.0,Not significant
+Static,la20,GAKK,GASRPT,1.0,Not significant
+Static,la20,GAKK,TS,0.0004,Significant
+Static,la20,GALPT,GALRPT,0.9997,Not significant
+Static,la20,GALPT,GAMIX,1.0,Not significant
+Static,la20,GALPT,GASPT,0.9999,Not significant
+Static,la20,GALPT,GASRPT,0.9928,Not significant
+Static,la20,GALPT,TS,0.0,Significant
+Static,la20,GALRPT,GAMIX,1.0,Not significant
+Static,la20,GALRPT,GASPT,1.0,Not significant
+Static,la20,GALRPT,GASRPT,1.0,Not significant
+Static,la20,GALRPT,TS,0.0004,Significant
+Static,la20,GAMIX,GASPT,1.0,Not significant
+Static,la20,GAMIX,GASRPT,0.9987,Not significant
+Static,la20,GAMIX,TS,0.0001,Significant
+Static,la20,GASPT,GASRPT,0.9999,Not significant
+Static,la20,GASPT,TS,0.0002,Significant
+Static,la20,GASRPT,TS,0.0014,Significant
+Static,la30,GA,GAKK,1.0,Not significant
+Static,la30,GA,GALPT,0.9745,Not significant
+Static,la30,GA,GALRPT,1.0,Not significant
+Static,la30,GA,GAMIX,0.9991,Not significant
+Static,la30,GA,GASPT,0.9999,Not significant
+Static,la30,GA,GASRPT,1.0,Not significant
+Static,la30,GA,TS,0.0,Significant
+Static,la30,GAKK,GALPT,0.9858,Not significant
+Static,la30,GAKK,GALRPT,1.0,Not significant
+Static,la30,GAKK,GAMIX,0.9976,Not significant
+Static,la30,GAKK,GASPT,0.9996,Not significant
+Static,la30,GAKK,GASRPT,1.0,Not significant
+Static,la30,GAKK,TS,0.0,Significant
+Static,la30,GALPT,GALRPT,0.9576,Not significant
+Static,la30,GALPT,GAMIX,0.7617,Not significant
+Static,la30,GALPT,GASPT,0.8483,Not significant
+Static,la30,GALPT,GASRPT,0.9967,Not significant
+Static,la30,GALPT,TS,0.0009,Significant
+Static,la30,GALRPT,GAMIX,0.9997,Not significant
+Static,la30,GALRPT,GASPT,1.0,Not significant
+Static,la30,GALRPT,GASRPT,0.9999,Not significant
+Static,la30,GALRPT,TS,0.0,Significant
+Static,la30,GAMIX,GASPT,1.0,Not significant
+Static,la30,GAMIX,GASRPT,0.9886,Not significant
+Static,la30,GAMIX,TS,0.0,Significant
+Static,la30,GASPT,GASRPT,0.9967,Not significant
+Static,la30,GASPT,TS,0.0,Significant
+Static,la30,GASRPT,TS,0.0,Significant
+Mixed,la10,GA,GAKK,1.0,Not significant
+Mixed,la10,GA,GALPT,1.0,Not significant
+Mixed,la10,GA,GALRPT,1.0,Not significant
+Mixed,la10,GA,GAMIX,1.0,Not significant
+Mixed,la10,GA,GASPT,1.0,Not significant
+Mixed,la10,GA,GASRPT,1.0,Not significant
+Mixed,la10,GA,TS,0.0,Significant
+Mixed,la10,GAKK,GALPT,1.0,Not significant
+Mixed,la10,GAKK,GALRPT,1.0,Not significant
+Mixed,la10,GAKK,GAMIX,1.0,Not significant
+Mixed,la10,GAKK,GASPT,1.0,Not significant
+Mixed,la10,GAKK,GASRPT,1.0,Not significant
+Mixed,la10,GAKK,TS,0.0,Significant
+Mixed,la10,GALPT,GALRPT,1.0,Not significant
+Mixed,la10,GALPT,GAMIX,1.0,Not significant
+Mixed,la10,GALPT,GASPT,1.0,Not significant
+Mixed,la10,GALPT,GASRPT,1.0,Not significant
+Mixed,la10,GALPT,TS,0.0,Significant
+Mixed,la10,GALRPT,GAMIX,1.0,Not significant
+Mixed,la10,GALRPT,GASPT,1.0,Not significant
+Mixed,la10,GALRPT,GASRPT,1.0,Not significant
+Mixed,la10,GALRPT,TS,0.0,Significant
+Mixed,la10,GAMIX,GASPT,1.0,Not significant
+Mixed,la10,GAMIX,GASRPT,1.0,Not significant
+Mixed,la10,GAMIX,TS,0.0,Significant
+Mixed,la10,GASPT,GASRPT,1.0,Not significant
+Mixed,la10,GASPT,TS,0.0,Significant
+Mixed,la10,GASRPT,TS,0.0,Significant
+Mixed,la30,GA,GAKK,0.0545,Not significant
+Mixed,la30,GA,GALPT,0.9999,Not significant
+Mixed,la30,GA,GALRPT,0.9243,Not significant
+Mixed,la30,GA,GAMIX,0.7617,Not significant
+Mixed,la30,GA,GASPT,0.9426,Not significant
+Mixed,la30,GA,GASRPT,1.0,Not significant
+Mixed,la30,GA,TS,0.9994,Not significant
+Mixed,la30,GAKK,GALPT,0.1506,Not significant
+Mixed,la30,GAKK,GALRPT,0.6371,Not significant
+Mixed,la30,GAKK,GAMIX,0.8483,Not significant
+Mixed,la30,GAKK,GASPT,0.5927,Not significant
+Mixed,la30,GAKK,GASRPT,0.0853,Not significant
+Mixed,la30,GAKK,TS,0.0092,Significant
+Mixed,la30,GALPT,GALRPT,0.9909,Not significant
+Mixed,la30,GALPT,GAMIX,0.9339,Not significant
+Mixed,la30,GALPT,GASPT,0.9944,Not significant
+Mixed,la30,GALPT,GASRPT,1.0,Not significant
+Mixed,la30,GALPT,TS,0.9826,Not significant
+Mixed,la30,GALRPT,GAMIX,1.0,Not significant
+Mixed,la30,GALRPT,GASPT,1.0,Not significant
+Mixed,la30,GALRPT,GASRPT,0.9639,Not significant
+Mixed,la30,GALRPT,TS,0.6371,Not significant
+Mixed,la30,GAMIX,GASPT,0.9999,Not significant
+Mixed,la30,GAMIX,GASRPT,0.8483,Not significant
+Mixed,la30,GAMIX,TS,0.3953,Not significant
+Mixed,la30,GASPT,GASRPT,0.9745,Not significant
+Mixed,la30,GASPT,TS,0.6804,Not significant
+Mixed,la30,GASRPT,TS,0.9967,Not significant
+NewJob,ft10,GA,GAKK,0.7617,Not significant
+NewJob,ft10,GA,GALPT,1.0,Not significant
+NewJob,ft10,GA,GALRPT,0.8772,Not significant
+NewJob,ft10,GA,GAMIX,1.0,Not significant
+NewJob,ft10,GA,GASPT,0.9957,Not significant
+NewJob,ft10,GA,GASRPT,1.0,Not significant
+NewJob,ft10,GA,TS,0.1011,Not significant
+NewJob,ft10,GAKK,GALPT,0.9139,Not significant
+NewJob,ft10,GAKK,GALRPT,1.0,Not significant
+NewJob,ft10,GAKK,GAMIX,0.9025,Not significant
+NewJob,ft10,GAKK,GASPT,0.2804,Not significant
+NewJob,ft10,GAKK,GASRPT,0.9243,Not significant
+NewJob,ft10,GAKK,TS,0.9339,Not significant
+NewJob,ft10,GALPT,GALRPT,0.9695,Not significant
+NewJob,ft10,GALPT,GAMIX,1.0,Not significant
+NewJob,ft10,GALPT,GASPT,0.9639,Not significant
+NewJob,ft10,GALPT,GASRPT,1.0,Not significant
+NewJob,ft10,GALPT,TS,0.216,Not significant
+NewJob,ft10,GALRPT,GAMIX,0.9639,Not significant
+NewJob,ft10,GALRPT,GASPT,0.4162,Not significant
+NewJob,ft10,GALRPT,GASRPT,0.9745,Not significant
+NewJob,ft10,GALRPT,TS,0.8483,Not significant
+NewJob,ft10,GAMIX,GASPT,0.9695,Not significant
+NewJob,ft10,GAMIX,GASRPT,1.0,Not significant
+NewJob,ft10,GAMIX,TS,0.2016,Not significant
+NewJob,ft10,GASPT,GASRPT,0.9576,Not significant
+NewJob,ft10,GASPT,TS,0.0103,Significant
+NewJob,ft10,GASRPT,TS,0.2311,Not significant
+NewJob,la10,GA,GAKK,1.0,Not significant
+NewJob,la10,GA,GALPT,1.0,Not significant
+NewJob,la10,GA,GALRPT,1.0,Not significant
+NewJob,la10,GA,GAMIX,1.0,Not significant
+NewJob,la10,GA,GASPT,1.0,Not significant
+NewJob,la10,GA,GASRPT,1.0,Not significant
+NewJob,la10,GA,TS,0.0,Significant
+NewJob,la10,GAKK,GALPT,1.0,Not significant
+NewJob,la10,GAKK,GALRPT,1.0,Not significant
+NewJob,la10,GAKK,GAMIX,1.0,Not significant
+NewJob,la10,GAKK,GASPT,1.0,Not significant
+NewJob,la10,GAKK,GASRPT,1.0,Not significant
+NewJob,la10,GAKK,TS,0.0,Significant
+NewJob,la10,GALPT,GALRPT,1.0,Not significant
+NewJob,la10,GALPT,GAMIX,1.0,Not significant
+NewJob,la10,GALPT,GASPT,1.0,Not significant
+NewJob,la10,GALPT,GASRPT,1.0,Not significant
+NewJob,la10,GALPT,TS,0.0,Significant
+NewJob,la10,GALRPT,GAMIX,1.0,Not significant
+NewJob,la10,GALRPT,GASPT,1.0,Not significant
+NewJob,la10,GALRPT,GASRPT,1.0,Not significant
+NewJob,la10,GALRPT,TS,0.0,Significant
+NewJob,la10,GAMIX,GASPT,1.0,Not significant
+NewJob,la10,GAMIX,GASRPT,1.0,Not significant
+NewJob,la10,GAMIX,TS,0.0,Significant
+NewJob,la10,GASPT,GASRPT,1.0,Not significant
+NewJob,la10,GASPT,TS,0.0,Significant
+NewJob,la10,GASRPT,TS,0.0,Significant
