@@ -1,0 +1,36 @@
+Scenario,Instance,Friedman χ²,p-value,Significance
+Static,ft06,35.8558,0.0,Significant
+Static,ft10,52.7534,0.0,Significant
+Static,ft20,50.5719,0.0,Significant
+Static,la01,56.3684,0.0,Significant
+Static,la10,,,Not significant
+Static,la20,41.4013,0.0,Significant
+Static,la30,47.8396,0.0,Significant
+Mixed,ft06,41.8171,0.0,Significant
+Mixed,ft10,49.8338,0.0,Significant
+Mixed,ft20,50.3031,0.0,Significant
+Mixed,la01,58.4076,0.0,Significant
+Mixed,la10,140.0,0.0,Significant
+Mixed,la20,52.5772,0.0,Significant
+Mixed,la30,47.5432,0.0,Significant
+Breakdown,ft06,3.0625,0.8792,Not significant
+Breakdown,ft10,16.7097,0.0194,Significant
+Breakdown,ft20,26.8048,0.0004,Significant
+Breakdown,la01,5.9495,0.5457,Not significant
+Breakdown,la10,,,Not significant
+Breakdown,la20,23.7715,0.0012,Significant
+Breakdown,la30,23.7433,0.0013,Significant
+TimeNoise,ft06,35.3405,0.0,Significant
+TimeNoise,ft10,51.2206,0.0,Significant
+TimeNoise,ft20,51.3876,0.0,Significant
+TimeNoise,la01,62.8329,0.0,Significant
+TimeNoise,la10,140.0,0.0,Significant
+TimeNoise,la20,50.4493,0.0,Significant
+TimeNoise,la30,49.8223,0.0,Significant
+NewJob,ft06,0.4334,0.9997,Not significant
+NewJob,ft10,15.7249,0.0278,Significant
+NewJob,ft20,24.5042,0.0009,Significant
+NewJob,la01,21.8964,0.0026,Significant
+NewJob,la10,,,Not significant
+NewJob,la20,15.7772,0.0272,Significant
+NewJob,la30,12.203,0.0941,Not significant
