@@ -1,158 +1,147 @@
 from __future__ import annotations
 from copy import deepcopy
-import csv, os, random
+import csv, os, random, tempfile
 from typing import Dict, List, Tuple, Any
-from tabu import run_tabu_search
-import tempfile
-from ga        import GeneticAlgorithm
-from scheduler import Scheduler
-from scenario  import apply_scenario
+
+from tabu       import run_tabu_search
+from ga         import GeneticAlgorithm
+from scheduler  import Scheduler
+from scenario   import apply_scenario
 
 def _append_job(data: Dict[str, Any]) -> None:
-    new_job = [(0, 3), (2, 5), (1, 4)]
-    data["jobs"].append(new_job)
+    data["jobs"].append([(0, 3), (2, 5), (1, 4)])
     data["num_jobs"] += 1
 
 def simulate_ts_with_rescheduling(
-        instance_data: Dict[str, Any],
-        scenario_id:   int,
-        max_time:      int = 100,
-) -> List[Tuple[int, int]]:
-    base          = deepcopy(instance_data)
-    scen          = apply_scenario(base, scenario_id)
+    instance_data: Dict[str, Any],
+    scenario_id  : int,
+    max_time     : int = 100
+) -> List[Tuple[int,int]]:
+    inst_copy = deepcopy(instance_data)
+    scen      = apply_scenario(inst_copy, scenario_id)
+    sched     = Scheduler(scen["num_machines"], use_cache=True)
 
-    events: List[Tuple[int, callable[[], None]]] = []
+    # build events
+    events: List[Tuple[int, callable[[],None]]] = []
     if "arrival_time" in scen:
-        events.append((scen["arrival_time"],
-                       lambda d=scen: _append_job(d)))
+        events.append((scen["arrival_time"], lambda d=scen: _append_job(d)))
     if "breakdowns" in scen:
         for br in scen["breakdowns"]:
-            t, m = br["start"], br["machine"]
-            events.append((t, lambda d=scen, mm=m: d.setdefault("_broken", set()).add(mm)))
-    events.sort()
+            t, dur, m = br["start"], br["duration"], br["machine"]
+            events.append((t,     lambda d=scen, mm=m: d.setdefault("_broken", set()).add(mm)))
+            events.append((t+dur, lambda d=scen, mm=m: d["_broken"].remove(mm)))
+    events.sort(key=lambda x: x[0])
 
-    def _run_tabu(machine_status: Dict[int, str | float] | None = None) -> int:
+    def _run_tabu(machine_status: Dict[int,Any] | None = None) -> int:
         tmp_csv = tempfile.NamedTemporaryFile(delete=False).name
-        res  = run_tabu_search(scen, scen["name"], tmp_csv, scenario_id)[0]
-        best = res[2]
-        seq = None
-        if len(res) > 3:
-            chrom = res[3]
-            if isinstance(chrom, list) and all(isinstance(x, int) for x in chrom):
-                ga_stub = GeneticAlgorithm(scen)
-                seq = ga_stub._decode(chrom, scen)
+        res     = run_tabu_search(
+            scen, scen["name"], tmp_csv, scenario_id,
+            machine_status=machine_status
+        )[0]
+        best_mk = res[2]
+        if len(res) > 4 and res[4] is not None:
+            seq = res[4]
+            # already decoded?
+            if seq and isinstance(seq[0], tuple) and isinstance(seq[0][1], tuple):
+                op_seq = seq
             else:
-                seq = chrom
+                op_seq = GeneticAlgorithm(scen)._decode(seq, scen)
+            best_mk = sched.calculate_makespan(op_seq, machine_status=machine_status)
+        return best_mk
 
-        # Final type check - bulletproof against broken Tabu return
-        if machine_status and (seq is None or not isinstance(seq, (list, tuple))):
-            return best
-        if machine_status and seq is not None:
-            sched = Scheduler(scen["num_machines"])
-            best = sched.calculate_makespan(seq, machine_status)
-        return best
-
-    history: List[Tuple[int, int]] = []
+    history: List[Tuple[int,int]] = []
     clk = 0
-    history.append((clk, _run_tabu()))
+    history.append((0, _run_tabu(None)))
 
     for t, apply_evt in events:
         if t > max_time:
             break
         clk = t
         apply_evt()
-
-        m_stat: Dict[int, str | float] = {}
+        m_stat: Dict[int,Any] = {}
         if scen.get("processing_noise"):
-            factor = 1.1 + random.random() * 0.1
+            fac = 1.1 + random.random()*0.1
             for mm in range(scen["num_machines"]):
-                m_stat[mm] = factor
+                m_stat[mm] = fac
         if "_broken" in scen:
             for mm in scen["_broken"]:
                 m_stat[mm] = "broken"
-
         history.append((clk, _run_tabu(m_stat)))
 
     if clk < max_time:
-        history.append((max_time, history[-1][1]))
+        m_stat = {}
+        if scen.get("processing_noise"):
+            fac = 1.1 + random.random()*0.1
+            for mm in range(scen["num_machines"]):
+                m_stat[mm] = fac
+        if "_broken" in scen:
+            for mm in scen["_broken"]:
+                m_stat[mm] = "broken"
+        history.append((max_time, _run_tabu(m_stat)))
+
     return history
 
-# ---------- main entry: continuous rescheduling ---
+
 def simulate_with_rescheduling(
     instance_data : Dict[str, Any],
     scenario_id   : int,
     variant_name  : str,
     heuristic_func,
-    max_time      : int = 100,
-) -> List[Tuple[int, int]]:
-    base           = deepcopy(instance_data)
-    scenario_data  = apply_scenario(base, scenario_id)
+    max_time      : int = 100
+) -> List[Tuple[int,int]]:
+    inst_copy    = deepcopy(instance_data)
+    scen         = apply_scenario(inst_copy, scenario_id)
+    sched_default = Scheduler(scen["num_machines"], use_cache=True)
 
-    agenda: List[Tuple[int, callable[[], None], str]] = []
-
-    if "arrival_time" in scenario_data:
-        t = scenario_data["arrival_time"]
-        agenda.append((t, lambda d=scenario_data: _append_job(d), "job_arrival"))
-
-    if "breakdowns" in scenario_data:
-        for b in scenario_data["breakdowns"]:
-            t, mach = b["start"], b["machine"]
-            def _mk_break(d=scenario_data, m=mach):
-                d.setdefault("_broken", set()).add(m)
-            agenda.append((t, _mk_break, f"breakdown_m{mach}"))
-
+    # build agenda
+    agenda: List[Tuple[int, callable[[],None], str]] = []
+    if "arrival_time" in scen:
+        agenda.append((scen["arrival_time"], lambda d=scen: _append_job(d), "job_arrival"))
+    if "breakdowns" in scen:
+        for br in scen["breakdowns"]:
+            t, dur, m = br["start"], br["duration"], br["machine"]
+            agenda.append((t,     lambda d=scen, mm=m: d.setdefault("_broken", set()).add(mm), f"br_start_m{m}"))
+            agenda.append((t+dur, lambda d=scen, mm=m: d["_broken"].remove(mm),                 f"br_end_m{m}"))
     agenda.sort(key=lambda x: x[0])
-    agenda_iter = iter(agenda)
-    next_evt    = next(agenda_iter, None)
+    it = iter(agenda)
+    next_evt = next(it, None)
 
-    inst_name = instance_data["name"]
-    log_fname = f"logs/{inst_name}_{variant_name}_scenario{scenario_id}.csv"
+    # prepare log
     os.makedirs("logs", exist_ok=True)
-    fout   = open(log_fname, "w", newline="")
-    writer = csv.writer(fout)
-    writer.writerow(["time", "variant", "instance", "makespan", "event"])
+    log_path = f"logs/{instance_data['name']}_{variant_name}_sc{scenario_id}.csv"
+    writer   = csv.writer(open(log_path, "w", newline=""))
+    writer.writerow(["time","variant","instance","makespan","event"])
 
-    def run_ga_and_log(clk: int, tag: str) -> int:
-        m_status: Dict[int, str | float] = {}
-        if scenario_data.get("processing_noise"):
-            factor = 1.1 + random.random() * 0.1
-            for m in range(scenario_data["num_machines"]):
-                m_status[m] = factor
-        if "_broken" in scenario_data:
-            for m in scenario_data["_broken"]:
-                m_status[m] = "broken"
+    def _run_ga(clk: int, tag: str) -> int:
+        m_stat: Dict[int,Any] = {}
+        if scen.get("processing_noise"):
+            fac = 1.1 + random.random()*0.1
+            for mm in range(scen["num_machines"]):
+                m_stat[mm] = fac
+        if "_broken" in scen:
+            for mm in scen["_broken"]:
+                m_stat[mm] = "broken"
 
-        ga = GeneticAlgorithm(
-            scenario_data,
-            pop_size           = 60,
-            num_generations    = 120,
-            local_search_swaps = 15,
-        )
-        sched = Scheduler(scenario_data["num_machines"], use_cache=True)
-        best_ind, _ = ga.run(scenario_data, sched, heuristic_func=heuristic_func)
-        best_mk = sched.calculate_makespan(
-            ga._decode(best_ind, scenario_data),
-            machine_status=m_status
-        )
-        writer.writerow([clk, variant_name, inst_name, best_mk, tag])
-        return best_mk
+        ga = GeneticAlgorithm(scen, pop_size=60, num_generations=120, local_search_swaps=15)
+        best, _ = ga.run(scen, sched_default, heuristic_func)
+        op_seq = ga._decode(best, scen)
+        mk = sched_default.calculate_makespan(op_seq, machine_status=m_stat)
+        writer.writerow([clk, variant_name, instance_data["name"], mk, tag])
+        return mk
 
-    history: List[Tuple[int, int]] = []
+    history: List[Tuple[int,int]] = []
     clk = 0
-    history.append((clk, run_ga_and_log(clk, "initial")))
+    history.append((0, _run_ga(0, "initial")))
 
-    while next_evt is not None:
-        evt_time, apply_evt, evt_name = next_evt
-        if evt_time > max_time:
-            break
-        clk = evt_time
-        apply_evt()
-        history.append((clk, run_ga_and_log(clk, evt_name)))
-        next_evt = next(agenda_iter, None)
+    while next_evt and next_evt[0] <= max_time:
+        t, fn, tag = next_evt
+        clk = t
+        fn()
+        history.append((clk, _run_ga(clk, tag)))
+        next_evt = next(it, None)
 
     if clk < max_time:
         clk = max_time
-        history.append((clk, run_ga_and_log(clk, "finish")))
+        history.append((clk, _run_ga(clk, "finish")))
 
-    fout.close()
     return history
