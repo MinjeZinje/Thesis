@@ -1,26 +1,26 @@
-# main.py  – clean v3  (2025-06-06)
 from __future__ import annotations
 import os, csv, copy, random, statistics, tempfile
 from typing import Dict, Tuple
 from multiprocessing import Pool
 
-from loader      import load_instances
-from heuristics  import HEURISTICS
-from ga          import GeneticAlgorithm
-from scheduler   import Scheduler
+from loader import load_instances
+from heuristics import HEURISTICS
+from ga import GeneticAlgorithm
+from scheduler import Scheduler
 from rescheduler import simulate_with_rescheduling, simulate_ts_with_rescheduling
-from tabu        import run_tabu_search
+from tabu import run_tabu_search
 
 random.seed(42)
 REPS = 20
 
 SCENARIOS: Dict[str, int] = {
-    "Static":     0,
-    "NewJob":     1,
-    "Breakdown":  2,
-    "TimeNoise":  3,
-    "Mixed":      4,        # all events together
+    "Static": 0,
+    "NewJob": 1,
+    "Breakdown": 2,
+    "TimeNoise": 3,
+    "Mixed": 4,  # all events together
 }
+
 
 # ------------------------------------------------------------------  GA helper
 def _ga_static_once(data: dict, heuristic) -> int:
@@ -28,7 +28,7 @@ def _ga_static_once(data: dict, heuristic) -> int:
         data,
         pop_size=200, num_generations=1_000,
         crossover_rate=0.95, mutation_rate=0.05,
-        elitism_rate=0.10,   local_search_swaps=30,
+        elitism_rate=0.10, local_search_swaps=30,
         seed_ratio=0.25,
     )
     sched = Scheduler(num_machines=data["num_machines"])
@@ -39,20 +39,20 @@ def _ga_static_once(data: dict, heuristic) -> int:
 def _one_ga_run(args: Tuple[dict, int, str, callable]) -> int:
     instance, scen_id, vname, hfun = args
     inst = copy.deepcopy(instance)
-    if scen_id == 0:                       # static
+    if scen_id == 0:  # static
         return _ga_static_once(inst, hfun)
-    # dynamic
     hist = simulate_with_rescheduling(
         inst, scenario_id=scen_id,
         variant_name=vname,
         heuristic_func=hfun,
         max_time=100,
     )
-    return hist[-1][1]                    # makespan after final event
+    return hist[-1][1]  # makespan after final event
 
-# ------------------------------------------------------------------  TS helper
+
+# ------------------------------------------------------------- TS helper
 def _ts_static_once(data: dict) -> int:
-    tmp = tempfile.NamedTemporaryFile(delete=False).name   # dummy csv path
+    tmp = tempfile.NamedTemporaryFile(delete=False).name  # dummy csv path
     return run_tabu_search(data, data["name"], tmp, 0)[0][2]
 
 
@@ -61,10 +61,13 @@ def _ts_dynamic_once(data: dict, scen_id: int) -> int:
     return hist[-1][1]
 
 
-def _one_ts_run(args: Tuple[dict, int]) -> int:
-    inst, sid = args
+def _one_ts_run(args: Tuple[dict, int, int]) -> int:
+    inst, sid, rep = args
+    # reseed per scenario+rep for genuine variability
+    random.seed(sid * 1000 + rep)
     dat = copy.deepcopy(inst)
     return _ts_static_once(dat) if sid == 0 else _ts_dynamic_once(dat, sid)
+
 
 # --------------------------------------------------------------------------- #
 def main() -> None:
@@ -94,8 +97,8 @@ def main() -> None:
                 print(f"    {vname:<7} avg={statistics.mean(scores):.2f} "
                       f"sd={statistics.pstdev(scores):.2f}")
 
-            # ---------- TS baseline
-            ts_args = [(inst, sid)] * REPS
+            # ---------- TS baseline (seeded per rep)
+            ts_args = [(inst, sid, rep) for rep in range(REPS)]
             with Pool() as pool:
                 ts_scores = pool.map(_one_ts_run, ts_args)
             for mk in ts_scores:
