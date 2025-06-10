@@ -1,4 +1,5 @@
- instance ft06
+https://1drv.ms/w/c/b6270dd2cbf7d5a4/EQKJvyLw-NdDl2DliQwXSvsBfxbsV5Euy0Ghik0U43amSw?e=Bd1AhD
+instance ft06
 
  +++++++++++++++++++++++++++++
  Fisher and Thompson 6x6 instance, alternate name (mt06); lower bound: 55; best known solution: 55
