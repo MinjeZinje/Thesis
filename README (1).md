@@ -145,5 +145,3 @@ Gantulga, M. (2025). Hybrid Genetic Algorithms in Dynamic Job Shop Scheduling Pr
 
 ---
 
-## License
-Choose a license for your repository (e.g., MIT, Apache‑2.0) and put it in `LICENSE`.
