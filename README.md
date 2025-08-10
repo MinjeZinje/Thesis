@@ -129,10 +129,5 @@ If you use this code, please cite the thesis:
 
 Minjin Gantulga (2025). Hybrid genetic algorithms in dynamic job shop scheduling problems. Otto-von-Guericke University Magdeburg.
 
-(Replace with your final bib entry once available.)
-
-License
-[Choose a license] — e.g., MIT. (Add a LICENSE file if you haven’t yet.)
-
 Contact
 Questions or issues? Open a GitHub issue or email minjin.gantulga@st.ovgu.de.
